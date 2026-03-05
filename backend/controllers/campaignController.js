@@ -78,7 +78,7 @@ async function testConnection(req, res) {
     const startTime = Date.now();
     try {
       const response = await axios.post(
-        `${campaign.crm_api_url.replace(/\/$/, '')}/lead/v1/public`,
+        `${campaign.crm_api_url.replace(/\/$/, '')}/public`,
         payload,
         {
           headers: {

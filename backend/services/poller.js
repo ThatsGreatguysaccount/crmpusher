@@ -21,7 +21,7 @@ async function forwardLead(campaign, lead) {
   if (lead.comment)  payload.comment  = lead.comment;
 
   const response = await axios.post(
-    `${campaign.crm_api_url.replace(/\/$/, '')}/lead/v1/public`,
+    `${campaign.crm_api_url.replace(/\/$/, '')}/public`,
     payload,
     {
       headers: {
@@ -39,7 +39,7 @@ async function forwardLead(campaign, lead) {
 
 async function fetchCrmStatus(campaign, crmLeadId) {
   const response = await axios.get(
-    `${campaign.crm_api_url.replace(/\/$/, '')}/lead/v1/public/status/${crmLeadId}`,
+    `${campaign.crm_api_url.replace(/\/$/, '')}/status/${crmLeadId}`,
     {
       headers: { Authorization: `Bearer ${campaign.crm_api_key}` },
       timeout: 10000,
