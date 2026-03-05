@@ -123,15 +123,12 @@ cd crmpusher
 
 ## 7. Configure the Backend
 
+Generate a JWT secret and write the entire `.env` in one block:
+
 ```bash
 cd /var/www/crmpusher/backend
-cp .env.example .env
-nano .env
-```
-
-Edit these values:
-
-```env
+JWT=$(node -e "console.log(require('crypto').randomBytes(48).toString('hex'))")
+cat > .env << EOF
 PORT=3001
 
 DB_HOST=localhost
@@ -140,20 +137,20 @@ DB_USER=crmpusher
 DB_PASSWORD=Asdewq!23454321
 DB_NAME=crmpusher
 
-JWT_SECRET=PASTE_GENERATED_SECRET_HERE  # see command below
+JWT_SECRET=$JWT
 JWT_EXPIRES_IN=7d
 
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=CHANGE_THIS_PASSWORD     # your panel login password
+ADMIN_PASSWORD=CHANGE_THIS_PASSWORD
 
 POLL_INTERVAL_SECONDS=30
+EOF
 ```
 
-Generate the JWT secret in one copy-paste:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
-```
+> **Only edit `ADMIN_PASSWORD`** — replace `CHANGE_THIS_PASSWORD` with your panel login password:
+> ```bash
+> sed -i 's/CHANGE_THIS_PASSWORD/YourPanelPassword/' /var/www/crmpusher/backend/.env
+> ```
 
 ### Install dependencies & initialise the database
 
