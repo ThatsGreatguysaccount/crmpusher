@@ -100,11 +100,9 @@ pm2 startup systemd
 
 ```bash
 cd /var/www
-git clone https://github.com/YOUR_USERNAME/CRMPusher.git crmpusher
+git clone https://github.com/ThatsGreatguysaccount/crmpusher.git crmpusher
 cd crmpusher
 ```
-
-> Replace `YOUR_USERNAME` with your GitHub username. This is the only thing you need to edit manually.
 
 ---
 
@@ -260,7 +258,7 @@ echo "  MySQL login  →  crmpusher / (password you set in Step 3)"
 ## 12. Updating After a Git Push
 
 ```bash
-cd /var/www/crmpusher && git pull
+cd /var/www/crmpusher && git pull origin main
 cd backend && npm install && pm2 restart crmpusher-backend
 cd ../frontend && npm install && npm run build
 ```
