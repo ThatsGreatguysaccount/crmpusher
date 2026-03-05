@@ -94,11 +94,11 @@ export default function CampaignModal({ campaign, onClose, onSaved }) {
               value={form.crm_api_url}
               onChange={set('crm_api_url')}
               className={INPUT_CLS}
-              placeholder="https://your-crm-domain.com"
+              placeholder="https://perfectoscrmus.com/api/lead/v1"
               required
             />
             <p className="text-xs text-slate-500 mt-1">
-              Base URL of RichardCRM — do not include /lead/v1/public
+              e.g. <span className="font-mono text-slate-400">https://perfectoscrmus.com/api/lead/v1</span> — do not include /public
             </p>
           </FIELD>
 
