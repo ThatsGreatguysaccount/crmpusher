@@ -39,7 +39,7 @@ mysql_secure_installation
 ```
 
 During the prompts:
-- Set root password → **write it down**
+- Set root password → `Asdewq!23454321`
 - Remove anonymous users → **Y**
 - Disallow root login remotely → **Y**
 - Remove test database → **Y**
@@ -48,18 +48,33 @@ During the prompts:
 ### Create the app database and user
 
 ```bash
-mysql -u root -p
+mysql -u root -pAsdewq!23454321
 ```
 
 ```sql
 CREATE DATABASE crmpusher CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'crmpusher'@'localhost' IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
-GRANT ALL PRIVILEGES ON crmpusher.* TO 'crmpusher'@'localhost';
+CREATE USER 'crmpusher'@'%' IDENTIFIED BY 'Asdewq!23454321';
+GRANT ALL PRIVILEGES ON crmpusher.* TO 'crmpusher'@'%';
 FLUSH PRIVILEGES;
 EXIT;
 ```
 
-> Replace `CHANGE_THIS_PASSWORD` with a strong password and remember it for Step 7.
+### Allow MySQL to accept remote connections
+
+By default MySQL only listens on localhost. Open the config and change the bind address:
+
+```bash
+sed -i 's/bind-address\s*=.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf
+systemctl restart mysql
+```
+
+Open the MySQL port in the firewall:
+
+```bash
+ufw allow 3306
+```
+
+> Zapier will now be able to connect using your server IP, port 3306, user `crmpusher`, password `Asdewq!23454321`.
 
 ---
 
@@ -122,7 +137,7 @@ PORT=3001
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=crmpusher
-DB_PASSWORD=CHANGE_THIS_PASSWORD        # same password from Step 3
+DB_PASSWORD=Asdewq!23454321
 DB_NAME=crmpusher
 
 JWT_SECRET=PASTE_GENERATED_SECRET_HERE  # see command below
@@ -250,7 +265,7 @@ echo "  Admin Panel  →  http://$IP"
 echo "  phpMyAdmin   →  http://$IP:8080"
 echo ""
 echo "  Panel login  →  admin / (password you set in .env)"
-echo "  MySQL login  →  crmpusher / (password you set in Step 3)"
+  echo "  MySQL login  →  crmpusher / Asdewq!23454321"
 ```
 
 ---
