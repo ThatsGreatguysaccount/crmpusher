@@ -18,7 +18,14 @@ async function forwardLead(campaign, lead) {
 
   if (lead.country)  payload.country  = lead.country;
   if (lead.city)     payload.city     = lead.city;
-  if (lead.comment)  payload.comment  = lead.comment;
+
+  // Build comment: combine free-text comment + custom question answers
+  const commentParts = [];
+  if (lead.comment)          commentParts.push(lead.comment);
+  if (lead.canadian_citizen) commentParts.push(`Canadian Citizen: ${lead.canadian_citizen}`);
+  if (lead.how_much_lost)    commentParts.push(`How Much Lost: ${lead.how_much_lost}`);
+  if (lead.how_long_ago)     commentParts.push(`How Long Ago: ${lead.how_long_ago}`);
+  if (commentParts.length)   payload.comment = commentParts.join(' | ');
 
   const response = await axios.post(
     `${campaign.crm_api_url.replace(/\/$/, '')}/public`,
@@ -208,6 +215,22 @@ async function migrateExistingTables() {
           `ALTER TABLE \`${table_name}\` ADD COLUMN comment TEXT DEFAULT NULL AFTER city`
         );
         console.log(`[Migration] Added comment column to \`${table_name}\``);
+      }
+
+      // custom question columns
+      const [canadianCols] = await pool.query(
+        `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = 'canadian_citizen'`,
+        [table_name]
+      );
+      if (canadianCols.length === 0) {
+        await pool.query(
+          `ALTER TABLE \`${table_name}\`
+           ADD COLUMN canadian_citizen VARCHAR(255) DEFAULT NULL AFTER comment,
+           ADD COLUMN how_much_lost VARCHAR(255) DEFAULT NULL AFTER canadian_citizen,
+           ADD COLUMN how_long_ago VARCHAR(255) DEFAULT NULL AFTER how_much_lost`
+        );
+        console.log(`[Migration] Added custom question columns to \`${table_name}\``);
       }
     }
   } catch (err) {

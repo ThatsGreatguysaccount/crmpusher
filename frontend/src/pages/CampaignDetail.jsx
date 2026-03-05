@@ -276,6 +276,9 @@ export default function CampaignDetail() {
                 ['Country', 'country'],
                 ['City', 'city'],
                 ['Comment / Note', 'comment'],
+                ['Canadian Citizen', 'canadian_citizen'],
+                ['How Much Lost', 'how_much_lost'],
+                ['How Long Ago', 'how_long_ago'],
               ].map(([fb, col]) => (
                 <div key={col} className="flex items-center gap-2 bg-slate-800 rounded-lg px-3 py-2">
                   <span className="text-xs text-slate-400 flex-1">{fb}</span>
