@@ -226,9 +226,9 @@ async function migrateExistingTables() {
       if (canadianCols.length === 0) {
         await pool.query(
           `ALTER TABLE \`${table_name}\`
-           ADD COLUMN canadian_citizen VARCHAR(255) DEFAULT NULL AFTER comment,
-           ADD COLUMN how_much_lost VARCHAR(255) DEFAULT NULL AFTER canadian_citizen,
-           ADD COLUMN how_long_ago VARCHAR(255) DEFAULT NULL AFTER how_much_lost`
+           ADD COLUMN canadian_citizen TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL AFTER comment,
+           ADD COLUMN how_much_lost TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL AFTER canadian_citizen,
+           ADD COLUMN how_long_ago TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL AFTER how_much_lost`
         );
         console.log(`[Migration] Added custom question columns to \`${table_name}\``);
       }
