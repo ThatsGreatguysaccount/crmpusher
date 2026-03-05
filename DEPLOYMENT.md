@@ -128,8 +128,11 @@ Generate a JWT secret and write the entire `.env` in one block:
 ```bash
 cd /var/www/crmpusher/backend
 JWT=$(node -e "console.log(require('crypto').randomBytes(48).toString('hex'))")
+PUBLIC_IP=$(curl -s -4 ifconfig.me)
 cat > .env << EOF
 PORT=3001
+
+PUBLIC_HOST=$PUBLIC_IP
 
 DB_HOST=localhost
 DB_PORT=3306
@@ -141,7 +144,7 @@ JWT_SECRET=$JWT
 JWT_EXPIRES_IN=7d
 
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=CHANGE_THIS_PASSWORD
+ADMIN_PASSWORD=admin123
 
 POLL_INTERVAL_SECONDS=30
 EOF
@@ -199,7 +202,7 @@ server {
     }
 
     location /api/ {
-        proxy_pass http://127.0.0.1:3001/;
+        proxy_pass http://127.0.0.1:3001;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';

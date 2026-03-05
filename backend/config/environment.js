@@ -12,4 +12,5 @@ module.exports = {
   ADMIN_USERNAME: process.env.ADMIN_USERNAME || 'admin',
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'Admin123!',
   POLL_INTERVAL_SECONDS: parseInt(process.env.POLL_INTERVAL_SECONDS) || 30,
+  PUBLIC_HOST: process.env.PUBLIC_HOST || null,
 };

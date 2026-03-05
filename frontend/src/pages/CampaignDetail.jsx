@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import client from '../api/client';
 import {
   ArrowLeft, CheckCircle2, Clock, XCircle, RefreshCw,
-  Copy, Check, Zap, ChevronLeft, ChevronRight, Database,
+  Copy, Check, Zap, ChevronLeft, ChevronRight, Database, FlaskConical,
 } from 'lucide-react';
 
 function CopyField({ label, value, mono = true }) {
@@ -89,6 +89,10 @@ export default function CampaignDetail() {
   const [leadsLoading, setLeadsLoading] = useState(false);
   const [connInfo, setConnInfo] = useState(null);
   const [retrying, setRetrying] = useState(null);
+  const [testOpen, setTestOpen] = useState(false);
+  const [testForm, setTestForm] = useState({ firstName: '', lastName: '', email: '', phone: '', country: '', city: '', comment: '' });
+  const [testLoading, setTestLoading] = useState(false);
+  const [testResult, setTestResult] = useState(null);
 
   const fetchCampaign = useCallback(async () => {
     try {
@@ -138,6 +142,20 @@ export default function CampaignDetail() {
       console.error(err);
     } finally {
       setRetrying(null);
+    }
+  }
+
+  async function handleTest(e) {
+    e.preventDefault();
+    setTestLoading(true);
+    setTestResult(null);
+    try {
+      const res = await client.post(`/campaigns/${id}/test`, testForm);
+      setTestResult(res.data);
+    } catch (err) {
+      setTestResult({ success: false, crm_response: { message: err.message } });
+    } finally {
+      setTestLoading(false);
     }
   }
 
@@ -272,6 +290,100 @@ export default function CampaignDetail() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Test Connection */}
+      <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
+        <button
+          onClick={() => { setTestOpen(o => !o); setTestResult(null); }}
+          className="w-full flex items-center gap-3 px-5 py-4 hover:bg-slate-700/30 transition-colors"
+        >
+          <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <FlaskConical className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1 text-left">
+            <h2 className="text-sm font-semibold text-white">Test CRM Connection</h2>
+            <p className="text-xs text-slate-400">Push a test lead and see the full CRM response</p>
+          </div>
+          <span className="text-xs text-slate-500">{testOpen ? '▲ collapse' : '▼ expand'}</span>
+        </button>
+
+        {testOpen && (
+          <div className="border-t border-slate-700 p-5 space-y-4">
+            <form onSubmit={handleTest} className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  ['firstName', 'First Name'],
+                  ['lastName',  'Last Name'],
+                  ['email',     'Email *'],
+                  ['phone',     'Phone'],
+                  ['country',   'Country'],
+                  ['city',      'City'],
+                ].map(([field, label]) => (
+                  <div key={field}>
+                    <label className="block text-xs text-slate-400 mb-1">{label}</label>
+                    <input
+                      type={field === 'email' ? 'email' : 'text'}
+                      value={testForm[field]}
+                      onChange={e => setTestForm(f => ({ ...f, [field]: e.target.value }))}
+                      required={field === 'email'}
+                      placeholder={label.replace(' *', '')}
+                      className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Comment</label>
+                <input
+                  type="text"
+                  value={testForm.comment}
+                  onChange={e => setTestForm(f => ({ ...f, comment: e.target.value }))}
+                  placeholder="Optional note"
+                  className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={testLoading}
+                className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                <FlaskConical className={`w-4 h-4 ${testLoading ? 'animate-pulse' : ''}`} />
+                {testLoading ? 'Sending...' : 'Send Test Lead'}
+              </button>
+            </form>
+
+            {testResult && (
+              <div className={`rounded-xl border p-4 space-y-3 ${testResult.success ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
+                <div className="flex items-center gap-2">
+                  {testResult.success
+                    ? <CheckCircle2 className="w-4 h-4 text-green-400" />
+                    : <XCircle className="w-4 h-4 text-red-400" />}
+                  <span className={`text-sm font-semibold ${testResult.success ? 'text-green-400' : 'text-red-400'}`}>
+                    {testResult.success ? 'Lead pushed successfully' : 'Push failed'}
+                  </span>
+                  {testResult.status_code && (
+                    <span className="text-xs text-slate-500 ml-auto">HTTP {testResult.status_code} · {testResult.duration_ms}ms</span>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Payload Sent</p>
+                  <pre className="bg-slate-900 rounded-lg p-3 text-xs text-slate-300 overflow-x-auto">
+                    {JSON.stringify(testResult.payload_sent, null, 2)}
+                  </pre>
+                </div>
+
+                <div>
+                  <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">CRM Response</p>
+                  <pre className={`bg-slate-900 rounded-lg p-3 text-xs overflow-x-auto ${testResult.success ? 'text-green-300' : 'text-red-300'}`}>
+                    {JSON.stringify(testResult.crm_response, null, 2)}
+                  </pre>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Leads Table */}
