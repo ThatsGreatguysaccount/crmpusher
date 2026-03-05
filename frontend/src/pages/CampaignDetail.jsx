@@ -416,6 +416,7 @@ export default function CampaignDetail() {
                 <th className="px-5 py-3">Email</th>
                 <th className="px-5 py-3">Phone</th>
                 <th className="px-5 py-3">Country</th>
+                <th className="px-5 py-3">Comment Sent</th>
                 <th className="px-5 py-3">Push Status</th>
                 <th className="px-5 py-3">CRM Status</th>
                 <th className="px-5 py-3">CRM Lead ID</th>
@@ -426,13 +427,13 @@ export default function CampaignDetail() {
             <tbody>
               {leadsLoading ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-12">
+                  <td colSpan={10} className="text-center py-12">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto" />
                   </td>
                 </tr>
               ) : leads.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-12 text-slate-500 text-sm">
+                  <td colSpan={10} className="text-center py-12 text-slate-500 text-sm">
                     No leads yet. Configure Zapier with the details above to start receiving leads.
                   </td>
                 </tr>
@@ -448,6 +449,19 @@ export default function CampaignDetail() {
                     <td className="px-5 py-3 text-slate-300">{lead.email || '—'}</td>
                     <td className="px-5 py-3 text-slate-300">{lead.phone || '—'}</td>
                     <td className="px-5 py-3 text-slate-300">{lead.country || '—'}</td>
+                    <td className="px-5 py-3 max-w-xs">
+                      {(() => {
+                        const parts = [];
+                        if (lead.comment)          parts.push(lead.comment);
+                        if (lead.canadian_citizen) parts.push(`Canadian Citizen: ${lead.canadian_citizen}`);
+                        if (lead.how_much_lost)    parts.push(`How Much Lost: ${lead.how_much_lost}`);
+                        if (lead.how_long_ago)     parts.push(`How Long Ago: ${lead.how_long_ago}`);
+                        const combined = parts.join(' | ');
+                        return combined ? (
+                          <span className="text-xs text-slate-300 line-clamp-2" title={combined}>{combined}</span>
+                        ) : <span className="text-slate-600 text-xs">—</span>;
+                      })()}
+                    </td>
                     <td className="px-5 py-3">
                       <StatusBadge status={lead.forward_status} />
                       {lead.forward_error && (
