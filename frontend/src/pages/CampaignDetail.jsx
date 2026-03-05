@@ -89,6 +89,7 @@ export default function CampaignDetail() {
   const [leadsLoading, setLeadsLoading] = useState(false);
   const [connInfo, setConnInfo] = useState(null);
   const [retrying, setRetrying] = useState(null);
+  const [expandedResponse, setExpandedResponse] = useState(null);
   const [testOpen, setTestOpen] = useState(false);
   const [testForm, setTestForm] = useState({ firstName: '', lastName: '', email: '', phone: '', country: '', city: '', comment: '' });
   const [testLoading, setTestLoading] = useState(false);
@@ -438,7 +439,7 @@ export default function CampaignDetail() {
                   </td>
                 </tr>
               ) : (
-                leads.map((lead) => (
+                leads.map((lead) => (<>
                   <tr
                     key={lead.id}
                     className="border-b border-slate-700/50 hover:bg-slate-700/20 transition-colors text-sm"
@@ -490,19 +491,45 @@ export default function CampaignDetail() {
                       {new Date(lead.created_at).toLocaleString()}
                     </td>
                     <td className="px-5 py-3">
-                      {lead.forward_status === 'failed' && (
-                        <button
-                          onClick={() => handleRetry(lead.id)}
-                          disabled={retrying === lead.id}
-                          className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 disabled:opacity-40 transition-colors"
-                        >
-                          <RefreshCw className={`w-3 h-3 ${retrying === lead.id ? 'animate-spin' : ''}`} />
-                          Retry
-                        </button>
-                      )}
+                      <div className="flex flex-col gap-1">
+                        {lead.forward_status === 'failed' && (
+                          <button
+                            onClick={() => handleRetry(lead.id)}
+                            disabled={retrying === lead.id}
+                            className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 disabled:opacity-40 transition-colors"
+                          >
+                            <RefreshCw className={`w-3 h-3 ${retrying === lead.id ? 'animate-spin' : ''}`} />
+                            Retry
+                          </button>
+                        )}
+                        {lead.crm_raw_response && (
+                          <button
+                            onClick={() => setExpandedResponse(expandedResponse === lead.id ? null : lead.id)}
+                            className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"
+                          >
+                            <span>{expandedResponse === lead.id ? '▲' : '▼'}</span>
+                            Response
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
-                ))
+                  {expandedResponse === lead.id && lead.crm_raw_response && (
+                    <tr key={`${lead.id}-response`} className="bg-slate-900/60 border-b border-slate-700/50">
+                      <td colSpan={10} className="px-5 py-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">CRM Response</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${lead.forward_status === 'forwarded' ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'}`}>
+                            {lead.forward_status}
+                          </span>
+                        </div>
+                        <pre className={`text-xs rounded-lg p-3 overflow-x-auto ${lead.forward_status === 'forwarded' ? 'bg-slate-800 text-green-300' : 'bg-slate-800 text-red-300'}`}>
+                          {JSON.stringify(JSON.parse(lead.crm_raw_response), null, 2)}
+                        </pre>
+                      </td>
+                    </tr>
+                  )}
+                </>))
               )}
             </tbody>
           </table>

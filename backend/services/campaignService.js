@@ -23,6 +23,7 @@ async function createLeadTable(tableName) {
       crm_lead_id VARCHAR(255) DEFAULT NULL,
       crm_status VARCHAR(100) DEFAULT NULL,
       crm_status_updated_at DATETIME DEFAULT NULL,
+      crm_raw_response TEXT DEFAULT NULL,
       forward_error TEXT DEFAULT NULL,
       retry_count INT DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

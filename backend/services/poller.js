@@ -88,9 +88,10 @@ async function processLeads() {
                    crm_lead_id = ?,
                    crm_status = ?,
                    crm_status_updated_at = NOW(),
+                   crm_raw_response = ?,
                    forward_error = NULL
                WHERE id = ?`,
-              [crmId ? String(crmId) : null, crmStatus, lead.id]
+              [crmId ? String(crmId) : null, crmStatus, JSON.stringify(result), lead.id]
             );
 
             console.log(`[Poller] ✅ Lead #${lead.id} (${lead.email || lead.phone}) → CRM ID: ${crmId || 'n/a'} | CRM Status: ${crmStatus || 'n/a'}`);
@@ -101,11 +102,12 @@ async function processLeads() {
               leadErr.message                 ||
               'Unknown error';
 
+            const errResponse = leadErr.response?.data || { message: errMsg };
             await pool.query(
               `UPDATE \`${campaign.table_name}\`
-               SET forward_status = 'failed', forward_error = ?
+               SET forward_status = 'failed', forward_error = ?, crm_raw_response = ?
                WHERE id = ?`,
-              [String(errMsg).slice(0, 500), lead.id]
+              [String(errMsg).slice(0, 500), JSON.stringify(errResponse), lead.id]
             );
 
             console.error(`[Poller] ❌ Lead #${lead.id} failed: ${errMsg}`);
@@ -215,6 +217,19 @@ async function migrateExistingTables() {
           `ALTER TABLE \`${table_name}\` ADD COLUMN comment TEXT DEFAULT NULL AFTER city`
         );
         console.log(`[Migration] Added comment column to \`${table_name}\``);
+      }
+
+      // crm_raw_response column
+      const [crmRespCols] = await pool.query(
+        `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = 'crm_raw_response'`,
+        [table_name]
+      );
+      if (crmRespCols.length === 0) {
+        await pool.query(
+          `ALTER TABLE \`${table_name}\` ADD COLUMN crm_raw_response TEXT DEFAULT NULL AFTER crm_status_updated_at`
+        );
+        console.log(`[Migration] Added crm_raw_response column to \`${table_name}\``);
       }
 
       // custom question columns
